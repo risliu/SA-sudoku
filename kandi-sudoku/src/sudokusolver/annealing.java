@@ -559,7 +559,7 @@ public class annealing {
 		
 		//The actual annealing part of the method.
 		while((objfun_value > 0) && (rounds_without_accepting<3)) {
-			while(count_changes < perturbations) {
+			while((count_changes < perturbations) && (objfun_value > 0)) {
 				give_candidate(possibles,candidate,board);
 				objfun_change = change_in_duplicates(board, candidate);
 				if(objfun_change <= 0) {
@@ -671,7 +671,7 @@ public class annealing {
 		total_change += change_counted;
 		change_counted = 0;
 		System.out.println("");
-
+		
 		total_tries += times_tried;
 		times_tried = 0;
 		int[][][] board3 = create_board();
@@ -771,7 +771,7 @@ public class annealing {
 		System.out.println("For all puzzles put together total elapsed time to was " + total_time_all/1000.0 + " seconds.");
 		System.out.println("While the average time for reaching a solution was " + total_time_all/(5000.0*solutions) + " seconds.");
 		System.out.println("The total amount of tries required between all the puzzles was " + total_tries + ",");
-		System.out.println("or around " + ((double) total_tries)/(5*solutions) + " times per try.");
+		System.out.println("or around " + ((double) total_tries)/(5*solutions) + " times per solution.");
 		System.out.println("The value of the objective function was measured a total of " + total_change + " times,");
 		System.out.println("or around " + ((double) total_change)/total_tries + " times per try.");
 		System.out.println("");

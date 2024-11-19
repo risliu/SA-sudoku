@@ -1,5 +1,6 @@
 package sudokusolver;
 
+import java.math.BigInteger;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -57,7 +58,6 @@ public class annealing {
 	
 	
 	public static void main(String[] args) {
-			
 		
 		int no_of_runs = 50;
 		
@@ -121,12 +121,20 @@ public class annealing {
 		testPerformance(false,false,4500,no_of_runs);
 		
 		
-		
 		/*
 		 * One run of the following gave me 1.5873394 as being the average change to objective value for worsening
 		 * solutions.
 		 */
+		
 		/*
+	    System.out.print("Java Specification Version: ");
+	    System.out.println(System.getProperty("java.specification.version"));
+	    System.out.print("java Runtime Environment (JRE) version: ");
+	    System.out.println(System.getProperty("java.version"));
+		
+		int[][][] board = create_board();
+		init_from_string(puzzle4,board);
+		
 		int[] candidate = new int[3];
 		int[][] possibles = possible_candidates(board);
 		int laskin = 0;
@@ -150,6 +158,37 @@ public class annealing {
 		System.out.println("This information can be used to determine the starting temperature.");
 		*/
 		
+		
+		/*
+		int[][][] board = create_board();
+		init_from_string(puzzle1,board);
+		
+		BigInteger options = new BigInteger("1");
+		long bigkusa = 0;
+		int biggestkusa = 0;
+		int[][] candidates = possible_candidates(board);
+		for(int i=0;i<9;i++) {
+			for(int j=0;j<9;j++) {
+				bigkusa = 0;
+				if(biggestkusa< candidates.length){
+					while(candidates[biggestkusa][0] == i && candidates[biggestkusa][1] == j) {
+						bigkusa++;
+						biggestkusa++;
+						if(biggestkusa == candidates.length) {
+							break;
+						}
+					}
+				}
+				System.out.println("At index x=" + i + " and y=" + j + " number of options is " + bigkusa);
+				if(bigkusa > 0) {
+					options = options.multiply(BigInteger.valueOf(bigkusa));
+					System.out.println("Calculated number of total options is now " + options);
+				}
+			}
+		}
+		*/
+		
+		
 	}
 	
 	/*
@@ -162,6 +201,8 @@ public class annealing {
 	static private int[][][] create_board() {
 		return new int[9][9][2];
 	}
+	
+	static private long change_counted = 0; //Takes into account both the initial measurement of the obj. function and the changes counted later on.
 	
 	static private Random ran = new Random();
 	
@@ -210,6 +251,8 @@ public class annealing {
 	 * between rounds of iterations, as that would be computationally wasteful.
 	 */
 	static private int count_duplicates(int board[][][]) {
+		change_counted += 1;
+		
 		int counter = 0;
 		int[] vector = new int[9];
 		for(int i=0;i<9;i++) {
@@ -279,6 +322,8 @@ public class annealing {
 	 * Note: This method requires for you to have a value other than zero on all of the spaces for it to work as intended.
 	 */
 	static private int change_in_duplicates(int board[][][], int candidate[]) {
+		change_counted += 1;
+		
 		int change = 0;
 		//Here we figure out what was the previous value in the space that we're trying to place a candidate value to.
 		int previous = board[candidate[0]][candidate[1]][0];
@@ -563,6 +608,9 @@ public class annealing {
 		//Note, we get the time in millis first.
 		boolean meme = true;
 		long total_time_all = 0;
+		int times_tried = 0;
+		int total_tries = 0;
+		long total_change = 0;
 		
 		int[][][] board1 = create_board();
 		init_from_string(puzzle1, board1);
@@ -573,7 +621,11 @@ public class annealing {
 			long start = System.currentTimeMillis();
 			while(meme){
 				if(simulated_annealing(board1,starting_temp,decrease,perturbations) == 0) {
+					times_tried++;
 					meme = false;
+				}
+				else {
+					times_tried++;
 				}
 			}
 			long finish = System.currentTimeMillis();
@@ -581,8 +633,16 @@ public class annealing {
 		}
 		System.out.println("For puzzle 1 total elapsed time to was " + total_time1/1000.0 + " seconds.");
 		System.out.println("While the average time for reaching a solution was " + total_time1/(1000.0*solutions) + " seconds.");
+		System.out.println("The total amount of tries required to reach " + solutions + " correct solutions was " + times_tried + ",");
+		System.out.println("or around " + ((double) times_tried)/solutions + " tries per solution.");
+		System.out.println("The value of the objective function was measured a total of " + change_counted + " times,");
+		System.out.println("or around " + ((double) change_counted)/times_tried + " times per try.");
+		total_change += change_counted;
+		change_counted = 0;
 		System.out.println("");
 		
+		total_tries += times_tried;
+		times_tried = 0;
 		int[][][] board2 = create_board();
 		init_from_string(puzzle2, board2);
 		long total_time2 = 0;
@@ -592,7 +652,11 @@ public class annealing {
 			long start = System.currentTimeMillis();
 			while(meme){
 				if(simulated_annealing(board2,starting_temp,decrease,perturbations) == 0) {
+					times_tried++;
 					meme = false;
+				}
+				else {
+					times_tried++;
 				}
 			}
 			long finish = System.currentTimeMillis();
@@ -600,8 +664,16 @@ public class annealing {
 		}
 		System.out.println("For puzzle 2 total elapsed time to was " + total_time2/1000.0 + " seconds.");
 		System.out.println("While the average time for reaching a solution was " + total_time2/(1000.0*solutions) + " seconds.");
+		System.out.println("The total amount of tries required to reach " + solutions + " correct solutions was " + times_tried + ",");
+		System.out.println("or around " + ((double) times_tried)/solutions + " tries per solution.");
+		System.out.println("The value of the objective function was measured a total of " + change_counted + " times,");
+		System.out.println("or around " + ((double) change_counted)/times_tried + " times per try.");
+		total_change += change_counted;
+		change_counted = 0;
 		System.out.println("");
-		
+
+		total_tries += times_tried;
+		times_tried = 0;
 		int[][][] board3 = create_board();
 		init_from_string(puzzle3, board3);
 		long total_time3 = 0;
@@ -611,7 +683,11 @@ public class annealing {
 			long start = System.currentTimeMillis();
 			while(meme){
 				if(simulated_annealing(board3,starting_temp,decrease,perturbations) == 0) {
+					times_tried++;
 					meme = false;
+				}
+				else {
+					times_tried++;
 				}
 			}
 			long finish = System.currentTimeMillis();
@@ -619,8 +695,16 @@ public class annealing {
 		}
 		System.out.println("For puzzle 3 total elapsed time to was " + total_time3/1000.0 + " seconds.");
 		System.out.println("While the average time for reaching a solution was " + total_time3/(1000.0*solutions) + " seconds.");
+		System.out.println("The total amount of tries required to reach " + solutions + " correct solutions was " + times_tried + ",");
+		System.out.println("or around " + ((double) times_tried)/solutions + " tries per solution.");
+		System.out.println("The value of the objective function was measured a total of " + change_counted + " times,");
+		System.out.println("or around " + ((double) change_counted)/times_tried + " times per try.");
+		total_change += change_counted;
+		change_counted = 0;
 		System.out.println("");
 		
+		total_tries += times_tried;
+		times_tried = 0;
 		int[][][] board4 = create_board();
 		init_from_string(puzzle4, board4);
 		long total_time4 = 0;
@@ -630,7 +714,11 @@ public class annealing {
 			long start = System.currentTimeMillis();
 			while(meme){
 				if(simulated_annealing(board4,starting_temp,decrease,perturbations) == 0) {
+					times_tried++;
 					meme = false;
+				}
+				else {
+					times_tried++;
 				}
 			}
 			long finish = System.currentTimeMillis();
@@ -638,8 +726,16 @@ public class annealing {
 		}
 		System.out.println("For puzzle 4 total elapsed time to was " + total_time4/1000.0 + " seconds.");
 		System.out.println("While the average time for reaching a solution was " + total_time4/(1000.0*solutions) + " seconds.");
+		System.out.println("The total amount of tries required to reach " + solutions + " correct solutions was " + times_tried + ",");
+		System.out.println("or around " + ((double) times_tried)/solutions + " tries per solution.");
+		System.out.println("The value of the objective function was measured a total of " + change_counted + " times,");
+		System.out.println("or around " + ((double) change_counted)/times_tried + " times per try.");
+		total_change += change_counted;
+		change_counted = 0;
 		System.out.println("");
 		
+		total_tries += times_tried;
+		times_tried = 0;
 		int[][][] board5 = create_board();
 		init_from_string(puzzle5, board5);
 		long total_time5 = 0;
@@ -649,7 +745,11 @@ public class annealing {
 			long start = System.currentTimeMillis();
 			while(meme){
 				if(simulated_annealing(board5,starting_temp,decrease,perturbations) == 0) {
+					times_tried++;
 					meme = false;
+				}
+				else {
+					times_tried++;
 				}
 			}
 			long finish = System.currentTimeMillis();
@@ -657,12 +757,23 @@ public class annealing {
 		}
 		System.out.println("For puzzle 5 total elapsed time to was " + total_time5/1000.0 + " seconds.");
 		System.out.println("While the average time for reaching a solution was " + total_time5/(1000.0*solutions) + " seconds.");
+		System.out.println("The total amount of tries required to reach " + solutions + " correct solutions was " + times_tried + ",");
+		System.out.println("or around " + ((double) times_tried)/solutions + " tries per solution.");
+		System.out.println("The value of the objective function was measured a total of " + change_counted + " times,");
+		System.out.println("or around " + ((double) change_counted)/times_tried + " times per try.");
+		total_change += change_counted;
+		change_counted = 0;
 		System.out.println("");
 		
+		total_tries += times_tried;
 		total_time_all = total_time1 + total_time2 + total_time3 + total_time4 + total_time5;
 		
 		System.out.println("For all puzzles put together total elapsed time to was " + total_time_all/1000.0 + " seconds.");
 		System.out.println("While the average time for reaching a solution was " + total_time_all/(5000.0*solutions) + " seconds.");
+		System.out.println("The total amount of tries required between all the puzzles was " + total_tries + ",");
+		System.out.println("or around " + ((double) total_tries)/(5*solutions) + " times per try.");
+		System.out.println("The value of the objective function was measured a total of " + total_change + " times,");
+		System.out.println("or around " + ((double) total_change)/total_tries + " times per try.");
 		System.out.println("");
 	}
 	
